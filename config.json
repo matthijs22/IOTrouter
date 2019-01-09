@@ -1,0 +1,16 @@
+{
+  "apiKey": "511528C5CED79B6278639037CBDAFC13CCCA519E0A072CF265B79054FEC405DC",
+  "port": 8080,
+  "logfile": "logs/tracelog.log",
+  "devices": {
+    "curtain_livingroom": {
+      "ip": "192.168.1.105",
+      "type": "Curtain"
+    },
+    "coffeemaker": {
+      "ip": "192.168.1.106",
+      "type": "CoffeeMaker"
+    }
+  }
+}
+	
