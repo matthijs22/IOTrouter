@@ -10,17 +10,16 @@ class RequestHandler(BaseHTTPRequestHandler):
     _config = Config()
     _logHandler = LogHandler(_config.logfile)
 
-
     # Error handling class
-    def handleError(self, code, message):
+    def handle_error(self, code, message):
         self.send_response(code)
         self.send_header("Content-type", "text/html")
         self.end_headers()
         self.wfile.write(str.encode(message))
-        self._logHandler.createEntry(message)
+        self._logHandler.create_entry(message)
 
     # Return response from Device
-    def handleResponse(self, message):
+    def handle_response(self, message):
         self.send_response(200)
         self.send_header("Content-type", "text/html")
         self.end_headers()
@@ -34,28 +33,28 @@ class RequestHandler(BaseHTTPRequestHandler):
     def execute(self, path, params):
         try:
             _segments = path.split("/")[1:]
-            queryType = _segments[0]
-            deviceName = _segments[1]
-            functionName = _segments[2]
-        except Exception as e:
-            self.handleError(404, "Path cannot be routed")
+            query_type = _segments[0]
+            device_name = _segments[1]
+            function_name = _segments[2]
+        except KeyError as e:
+            self.handle_error(404, "Path cannot be routed")
             return
 
         # Primary route for device calls, will refactor if more types are implemented in the future
-        if queryType == "device" and deviceName != "" and functionName != "":
+        if query_type == "device" and device_name != "" and function_name != "":
             try:
-                deviceType = self._config.devices[deviceName]["type"]
-                deviceIp = self._config.devices[deviceName]["ip"]
-                _device_module = importlib.import_module("devices." + deviceType)
-                _device_class = getattr(_device_module, deviceType)
-                _device = _device_class(deviceName, deviceIp)  # dynamically instantiate the device class
-                fn = getattr(_device, functionName)
+                device_type = self._config.devices[device_name]["type"]
+                device_ip = self._config.devices[device_name]["ip"]
+                _device_module = importlib.import_module("devices." + device_type)
+                _device_class = getattr(_device_module, device_type)
+                _device = _device_class(device_name, device_ip)  # dynamically instantiate the device class
+                fn = getattr(_device, function_name)
                 response = fn(params)
-                self.handleResponse(response)
+                self.handle_response(response)
             except AttributeError as e:  # device does not support requested function
-                self.handleError(404, "Path cannot be routed. Device does not support the requested function.")
+                self.handle_error(404, "Path cannot be routed. Device does not support the requested function.")
         else:
-            self.handleError(404, "Path cannot be routed.")
+            self.handle_error(404, "Path cannot be routed.")
 
     # Just reports server as running
     def do_GET(self):
@@ -70,14 +69,14 @@ class RequestHandler(BaseHTTPRequestHandler):
         try:
             _content_len = int(self.headers.get('Content-Length'))
             _post_body = self.rfile.read(_content_len)
-            data = json.loads(_post_body)
-        except Exception as e:
-            self.handleError(400, "Invalid submission. Body is not JSON")
+            post_data = json.loads(_post_body)
+        except ValueError as e:
+            self.handle_error(400, "Invalid submission. Body is not JSON")
             return
 
         # authenticate user
-        if not self.auth(data['apiKey']):
-            self.handleError(401, "Invalid API key")
+        if not self.auth(post_data['apiKey']):
+            self.handle_error(401, "Invalid API key")
             return
 
-        self.execute(self.path, data['params'])
+        self.execute(self.path, post_data['params'])
