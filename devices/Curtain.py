@@ -9,7 +9,7 @@ class Curtain:
     def toggle(self, params):
         try:
             state = params['state']
-            # requests.get("http://" + self.ip + "/"+state)
+            requests.get("http://" + self.ip + "/"+state)
             return "OK"
         except requests.RequestException as e:
             return "ERROR"

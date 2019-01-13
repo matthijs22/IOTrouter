@@ -4,7 +4,7 @@
   "logfile": "logs/tracelog.log",
   "devices": {
     "curtain_livingroom": {
-      "ip": "192.168.1.105",
+      "ip": "192.168.1.104",
       "type": "Curtain"
     },
     "coffeemaker": {
